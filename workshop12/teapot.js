@@ -1,4 +1,4 @@
-
+"use strict";
 
 var numDivisions = 3;
 
@@ -21,11 +21,31 @@ var dTheta = 5.0;
 
 var flag = true;
 
+var gl;
 var program;
+
+var bezier = function(u) {
+    var b = [];
+    var a = 1-u;
+    b.push(u*u*u);
+    b.push(3*a*u*u);
+    b.push(3*a*a*u);
+    b.push(a*a*a);
+    return b;
+}
+
+var nbezier = function(u) {
+    var b = [];
+    b.push(3*u*u);
+    b.push(3*u*(2-3*u));
+    b.push(3*(1-4*u+3*u*u));
+    b.push(-3*(1-u)*(1-u));
+    return b;
+}
 
 onload = function init()  {
     
-    canvas = document.getElementById( "gl-canvas" );
+    var canvas = document.getElementById( "gl-canvas" );
     
     gl = WebGLUtils.setupWebGL( canvas );
     if ( !gl ) { alert( "WebGL isn't available" ); }
@@ -49,32 +69,125 @@ onload = function init()  {
     
     var h = 1.0/numDivisions;
 
+    // Patch indices to data
+    var patch = new Array(numTeapotPatches);
+    for (var i = 0; i < numTeapotPatches; i++) {
+        patch[i] = new Array(16);
+    }
+    for (var i = 0; i < numTeapotPatches; i++) {
+        for (var j = 0; j < 16; j++) {
+            patch[i][j] = vec4([vertices[indices[i][j]][0],
+                vertices[indices[i][j]][2],
+                vertices[indices[i][j]][1], 1.0])
+        }
+    }
 
+    // Vertex data
+    for (var n = 0; n < numTeapotPatches; n++) {
+        var data = new Array(numDivisions + 1);
+        for (var j = 0; j <= numDivisions; j++) {
+            data[j] = new Array(numDivisions + 1);
+        }
+        for (var i = 0; i <= numDivisions; i++) {
+            for (var j = 0; j <= numDivisions; j++) {
+                data[i][j] = vec4(0, 0, 0, 1);
+                var u = i*h;
+                var v = j*h;
+                var t = new Array(4);
+                for (var ii = 0; ii < 4; ii++) {
+                    t[ii] = new Array(4);
+                }
+                for (var ii = 0; ii < 4; ii++) {
+                    for (var jj = 0; jj < 4; jj++) {
+                        t[ii][jj] = bezier(u)[ii] * bezier(v)[jj];
+                    }
+                }
+                for (var ii = 0; ii < 4; ii++) {
+                    for (var jj = 0; jj < 4; jj++) {
+                        var temp = vec4(patch[n][4 * ii + jj]);
+                        temp = scale(t[ii][jj], temp);
+                        data[i][j] = add(data[i][j], temp);
+                    }
+                }
+            }
+        }
 
-    document.getElementById("ButtonX").onclick = function(){axis = xAxis;};
-    document.getElementById("ButtonY").onclick = function(){axis = yAxis;};
-    document.getElementById("ButtonZ").onclick = function(){axis = zAxis;};
-    document.getElementById("ButtonT").onclick = function(){flag = !flag;};
+        var ndata = new Array(numDivisions + 1);
+        for (var j = 0; j <= numDivisions; j++) {
+            ndata [j] = new Array(numDivisions+1);
+        }
+
+        var tdata = new Array(numDivisions + 1);
+        for (var j = 0; j <= numDivisions; j++) {
+            tdata [j] = new Array(numDivisions+1);
+        }
+
+        var sdata = new Array(numDivisions + 1);
+        for (var j = 0; j <= numDivisions; j++) {
+            sdata [j] = new Array(numDivisions+1);
+        }
         
-    for(var i=0; i<numDivisions; i++) for(var j =0; j<numDivisions; j++) {
-        points.push(data[i][j]);
-        normals.push(ndata[i][j]);
+        for (var i = 0; i <= numDivisions; i++) {
+            for (var j = 0; j <= numDivisions; j++) {
+                ndata[i][j] = vec4(0,0,0,0);
+                tdata[i][j] = vec4(0,0,0,0);
+                sdata[i][j] = vec4(0,0,0,0);
+                var u = i*h;
+                var v = j*h;
+                var tt = new Array(4);
+                for(var ii = 0; ii < 4; ii++) {
+                    tt[ii] = new Array(4);
+                }
+                var ss = new Array(4);
+                for(var ii = 0; ii < 4; ii++) {
+                    ss[ii] = new Array(4);
+                }
+                
+                for(var ii = 0; ii < 4; ii++) for(var jj = 0; jj < 4; jj++) {
+                    tt[ii][jj] = nbezier(u)[ii]*bezier(v)[jj];
+                    ss[ii][jj] = bezier(u)[ii]*nbezier(v)[jj];
+                }
+                
+                for(var ii = 0; ii < 4; ii++) for(var jj = 0; jj < 4; jj++) {
+                    var temp = vec4(patch[n][4*ii+jj]);
+                    temp = scale(tt[ii][jj], temp);
+                    tdata[i][j] = add(tdata[i][j], temp);
+                    
+                    var stemp = vec4 (patch[n][4*ii+jj]);
+                    stemp = scale(ss[ii][jj], stemp);
+                    sdata[i][j] = add(sdata[i][j], stemp);
+                }
+                temp = cross(tdata[i][j], sdata[i][j]);
+                
+                ndata[i][j] = normalize(vec4(temp[0], temp[1], temp[2], 0));
+            }
+        }
 
-        points.push(data[i+1][j]);
-        normals.push(ndata[i+1][j]);
 
-        points.push(data[i+1][j+1]);
-        normals.push(ndata[i+1][j+1]);
+        document.getElementById("ButtonX").onclick = function(){axis = xAxis;};
+        document.getElementById("ButtonY").onclick = function(){axis = yAxis;};
+        document.getElementById("ButtonZ").onclick = function(){axis = zAxis;};
+        document.getElementById("ButtonT").onclick = function(){flag = !flag;};
+            
+        for(var i=0; i<numDivisions; i++) for(var j =0; j<numDivisions; j++) {
+            points.push(data[i][j]);
+            normals.push(ndata[i][j]);
 
-        points.push(data[i][j]);
-        normals.push(ndata[i][j]);
+            points.push(data[i+1][j]);
+            normals.push(ndata[i+1][j]);
 
-        points.push(data[i+1][j+1]);
-        normals.push(ndata[i+1][j+1]);
+            points.push(data[i+1][j+1]);
+            normals.push(ndata[i+1][j+1]);
 
-        points.push(data[i][j+1]);
-        normals.push(ndata[i][j+1]);
-        index+= 6;
+            points.push(data[i][j]);
+            normals.push(ndata[i][j]);
+
+            points.push(data[i+1][j+1]);
+            normals.push(ndata[i+1][j+1]);
+
+            points.push(data[i][j+1]);
+            normals.push(ndata[i][j+1]);
+            index+= 6;
         }
     }
 
@@ -126,20 +239,40 @@ onload = function init()  {
     render();
 }
 
-var render = function(){
-            gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+var render = function() {
+    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    
+    if(flag) theta[axis] += 0.5;
+    
+    modelViewMatrix = mat4();
+
+    modelViewMatrix = mult(modelViewMatrix, rotate(theta[xAxis], [1, 0, 0]));
+    modelViewMatrix = mult(modelViewMatrix, rotate(theta[yAxis], [0, 1, 0]));
+    modelViewMatrix = mult(modelViewMatrix, rotate(theta[zAxis], [0, 0, 1]));
+    
+    gl.uniformMatrix4fv( gl.getUniformLocation(program, "modelViewMatrix"), false, flatten(modelViewMatrix) );
             
-            if(flag) theta[axis] += 0.5;
-            
-            modelViewMatrix = mat4();
- 
-            modelViewMatrix = mult(modelViewMatrix, rotate(theta[xAxis], [1, 0, 0]));
-            modelViewMatrix = mult(modelViewMatrix, rotate(theta[yAxis], [0, 1, 0]));
-            modelViewMatrix = mult(modelViewMatrix, rotate(theta[zAxis], [0, 0, 1]));
-            
-            gl.uniformMatrix4fv( gl.getUniformLocation(program, "modelViewMatrix"), false, flatten(modelViewMatrix) );
-                    
-            gl.drawArrays( gl.TRIANGLES, 0, index);
-            //for(var i=0; i<index; i+=3) gl.drawArrays( gl.LINE_LOOP, i, 3 );
-            requestAnimFrame(render);
-        }
+    gl.drawArrays( gl.TRIANGLES, 0, index);
+    //for(var i=0; i<index; i+=3) gl.drawArrays( gl.LINE_LOOP, i, 3 );
+    requestAnimFrame(render);
+}
+
+// var vertexData = function() {
+//    for ( var n = 0; n < numTeapotPatches; n++ ) {
+// var data = new Array(numDivisions+1);
+// for(var j = 0; j<= numDivisions; j++) data[j] = new Array(numDivisions+1);
+// for(var i=0; i<=numDivisions; i++) for(var j=0; j<= numDivisions; j++) {
+// data[i][j] = vec4(0,0,0,1);
+// var u = i*h;
+// var v = j*h;
+// var t = new Array(4);
+// for(var ii=0; ii<4; ii++) t[ii]=new Array(4);
+// for(var ii=0; ii<4; ii++) for(var jj=0; jj<4; jj++)
+// t[ii][jj] = bezier(u)[ii]*bezier(v)[jj];
+// for(var ii=0; ii<4; ii++) for(var jj=0; jj<4; jj++) {
+// temp = vec4(patch[n][4*ii+jj]);
+// temp = scale( t[ii][jj], temp);
+// data[i][j] = add(data[i][j], temp);
+// }
+// } 
+// }
