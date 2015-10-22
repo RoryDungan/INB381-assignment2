@@ -3,7 +3,7 @@
 var gl;
 
 function initWebGL(canvas) {
-	gl = null;
+    gl = null;
 
     try {   
         // Try to grab the standard context. If it fails, fallback to experimental.
@@ -20,30 +20,30 @@ function initWebGL(canvas) {
 }
 
 function init() {
-	var canvas = document.getElementById("gl-canvas");
+    var canvas = document.getElementById("gl-canvas");
 
-	gl = initWebGL(canvas);
-	if (!gl) {
-		alert("WebGL isn't available");
-	}
+    gl = initWebGL(canvas);
+    if (!gl) {
+        alert("WebGL isn't available");
+    }
 
-	// Configure WebGL
-	gl.viewport(0, 0, canvas.width, canvas.height);
-	gl.clearColor(1.0, 1.0, 1.0, 1.0);
+    // Configure WebGL
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.clearColor(1.0, 1.0, 1.0, 1.0);
 
-	// TODO: load shaders and initialise everything else
+    // TODO: load shaders and initialise everything else
 
-	render();
+    render();
 }
 
 function render() {
-	gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT);
 
-	// TODO: Render objects
+    // TODO: Render objects
 
-	requestAnimFrame(render);
+    requestAnimFrame(render);
 }
 
 $(document).ready(function() {
-	init();
+    init();
 })
