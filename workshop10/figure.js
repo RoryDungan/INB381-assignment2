@@ -55,6 +55,10 @@ var angle = 0;
 
 var theta = [0, 0, 0, 0, 0, 0, 180, 0, 180, 0, 0];
 
+// Used for keeping track of the direction of the arms
+var leftArmDirection = 1;
+var rightArmDirection = -1;
+
 var numVertices = 24;
 
 var stack = [];
@@ -380,10 +384,28 @@ window.onload = function init() {
     render();
 }
 
-
 var render = function() {
 
-        gl.clear( gl.COLOR_BUFFER_BIT );
-        traverse(torsoId);
-        requestAnimFrame(render);
+    // Run animation
+    var translationDelta = 5;
+    var maxRotation = 80;
+    var minRotation = -80;
+
+    theta[leftUpperArmId] += translationDelta * leftArmDirection;
+    theta[rightUpperArmId] += translationDelta * rightArmDirection;
+
+	// Switch direction if necessary
+	if (theta[leftUpperArmId] > maxRotation || theta[leftUpperArmId] < minRotation) {
+		leftArmDirection = leftArmDirection * -1;
+	}
+	if (theta[rightUpperArmId] > maxRotation || theta[rightUpperArmId] < minRotation) {
+		rightArmDirection = rightArmDirection * -1;
+	}
+
+    initNodes(leftUpperArmId);
+    initNodes(rightUpperArmId);
+
+    gl.clear( gl.COLOR_BUFFER_BIT );
+    traverse(torsoId);
+    requestAnimFrame(render);
 }
