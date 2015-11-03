@@ -370,40 +370,51 @@ function LoadModel(ModelName, CB){
 		{
 			//Parse Model Data
 			var Script = Ajax.responseText.split("\n");
-			
-			var Vertices = [];
-			var VerticeMap = [];
-			
-			var Triangles = [];
-			
-			var Textures = [];
-			var TextureMap = [];
-			
-			var Normals = [];
-			var NormalMap = [];
+
+			// List of objects
+			var objects = [];
+			var currentObject;
 			
 			var Counter = 0;
 			
 			for(var I in Script)
 			{
 				var Line = Script[I];
+
+				// Object line
+				if(Line.substring(0,2) == "o ")
+				{
+					objects.push({
+						Vertices : [],
+						VerticeMap : [],
+						Triangles : [],
+						Textures : [],
+						TextureMap : [],
+						Normals : [],
+						NormalMap : []
+					});
+					currentObject = objects.length - 1;
+
+					Counter = 0;
+				}
+
 				//If Vertice Line
 				if(Line.substring(0,2) == "v ")
 				{
 					var Row = Line.substring(2).split(" ");
-					Vertices.push({ X : parseFloat(Row[0]), Y : parseFloat(Row[1]), Z : parseFloat(Row[2]) });
+					objects[currentObject].Vertices.push({ X : parseFloat(Row[0]), Y : parseFloat(Row[1]), Z : parseFloat(Row[2]) });
 				}
 				//Texture Line
 				else if(Line.substring(0,2) == "vt")
 				{
 					var Row = Line.substring(3).split(" ");
-					Textures.push({X : parseFloat(Row[0]), Y : parseFloat(Row[1])});
+					objects[currentObject].Textures.push({X : parseFloat(Row[0]), Y : parseFloat(Row[1])});
 				}
 				//Normals Line
 				else if(Line.substring(0,2) == "vn")
 				{
 					var Row = Line.substring(3).split(" ");
-					Normals.push({X : parseFloat(Row[0]), Y : parseFloat(Row[1]), Z : parseFloat(Row[2]) });
+					objects[currentObject].Normals.push({X : parseFloat(Row[0]), Y : parseFloat(Row[1]), Z : parseFloat(Row[2]) });
 				}
 				//Mapping Line
 				else if(Line.substring(0,2) == "f ")
@@ -418,46 +429,67 @@ function LoadModel(ModelName, CB){
 							if(Row[T].indexOf("/") != -1)
 							{
 								var TC = Row[T].split("/"); //Split the different values
-								Triangles.push(Counter); //Increment The Triangles Array
+								objects[currentObject].Triangles.push(Counter); //Increment The Triangles Array
 								Counter++;
 								
+								// Work out mapping offset
+								var vertexOffset = 0;
+								for (var i = 0; i < objects.length - 1; i++) {
+									vertexOffset += objects[i].Vertices.length;
+								}
 								//Insert Vertices 
-								var index = parseInt(TC[0]) - 1; 
-								VerticeMap.push(Vertices[index].X);
-								VerticeMap.push(Vertices[index].Y);
-								VerticeMap.push(Vertices[index].Z);
+								var index = (parseInt(TC[0]) - 1) - vertexOffset;
+								objects[currentObject].VerticeMap.push(objects[currentObject].Vertices[index].X);
+								objects[currentObject].VerticeMap.push(objects[currentObject].Vertices[index].Y);
+								objects[currentObject].VerticeMap.push(objects[currentObject].Vertices[index].Z);
 								
 								//Insert Textures
-								index = parseInt(TC[1]) - 1;
-								TextureMap.push(Textures[index].X);
-								TextureMap.push(Textures[index].Y);
+								var textureOffset = 0;
+								for (var i = 0; i < objects.length - 1; i++) {
+									textureOffset += objects[i].Textures.length;
+								}
+								index = (parseInt(TC[1]) - 1) - textureOffset;
+								objects[currentObject].TextureMap.push(objects[currentObject].Textures[index].X);
+								objects[currentObject].TextureMap.push(objects[currentObject].Textures[index].Y);
 								
 								//If This Entry Has Normals Data
 								if(TC.length>2)
 								{
 									//Insert Normals
-									index = parseInt(TC[2]) - 1;
-									NormalMap.push(Normals[index].X);
-									NormalMap.push(Normals[index].Y);
-									NormalMap.push(Normals[index].Z);
+									var normalsOffset = 0;
+									for (var i = 0; i < objects.length - 1; i++) {
+										normalsOffset += objects[i].Normals.length;
+									}
+
+									index = (parseInt(TC[2]) - 1) - normalsOffset;
+									objects[currentObject].NormalMap.push(objects[currentObject].Normals[index].X);
+									objects[currentObject].NormalMap.push(objects[currentObject].Normals[index].Y);
+									objects[currentObject].NormalMap.push(objects[currentObject].Normals[index].Z);
 								}
 							}
 							//For single value entries
 							else
 							{
-								Triangles.push(Counter); //Increment The Triangles Array
+								objects[currentObject].Triangles.push(Counter); //Increment The Triangles Array
 								Counter++;
-								var index = parseInt(Row[T]) - 1; 
-								VerticeMap.push(Vertices[index].X);
-								VerticeMap.push(Vertices[index].Y);
-								VerticeMap.push(Vertices[index].Z);
+
+								// Work out mapping offset
+								var vertexOffset = 0;
+								for (var i = 0; i < objects.length - 1; i++) {
+									vertexOffset += objects.Vertices.length;
+								}
+								// Push faces
+								var index = (parseInt(Row[T]) - 1) - vertexOffset;
+								objects[currentObject].VerticeMap.push(Vertices[index].X);
+								objects[currentObject].VerticeMap.push(Vertices[index].Y);
+								objects[currentObject].VerticeMap.push(Vertices[index].Z);
 							}
 						}
 					}
 				}
 			}
 			//Return The Arrays
-			CB(VerticeMap, Triangles, TextureMap, NormalMap);
+			CB(objects);
 		}
 	}
 	Ajax.open("GET", ModelName + ".obj", true);
