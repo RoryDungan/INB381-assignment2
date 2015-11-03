@@ -36,6 +36,18 @@ function init(birdMesh) {
     render();
 }
 
+function renderObject(buffer, numVertices, vertexPositionAttrib) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.vertexAttribPointer(vertexPositionAttrib, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAtribArray(vertexPositionAttrib);
+
+    // Set shader attributes
+    // TODO
+
+    // Draw the object
+    gl.drawArrays(gl.TRIANGLES, 0, numVertices);
+}
+
 function render() {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
