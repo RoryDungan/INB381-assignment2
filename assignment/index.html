@@ -13,6 +13,12 @@
 			var speed = 2;
 			var turnSpeed = 5.0;
 
+			var flapping = true;
+			var flapDirection = 1;
+			var flapSpeed = 5;
+			var flapHeight = 20;
+			var flapDepth = -20;
+
 			function Ready(){
 				GL = new WebGL("GLCanvas", "FragmentShader", "VertexShader");
 				LoadModel("Bird", function(objects) {
@@ -24,21 +30,21 @@
 						objects[0].NormalMap.length > 0 ? objects[0].NormalMap : false);
 
 					Bird.Pos.Z = 250;
-					BirdLeftWing = new GLObject(
+					BirdRightWing = new GLObject(
 						objects[1].VerticeMap, 
 						objects[1].Triangles, 
 						objects[1].TextureMap, 
 						"Bird.jpg", 
 						objects[1].NormalMap.length > 0 ? objects[1].NormalMap : false);
-					BirdLeftWing.SetParent(Bird);
+					BirdRightWing.SetParent(Bird);
 
-					BirdRightWing = new GLObject(
+					BirdLeftWing = new GLObject(
 						objects[2].VerticeMap, 
 						objects[2].Triangles, 
 						objects[2].TextureMap, 
 						"Bird.jpg", 
 						objects[2].NormalMap.length > 0 ? objects[1].NormalMap : false);
-					BirdRightWing.SetParent(Bird);
+					BirdLeftWing.SetParent(Bird);
 					Bird.Scale.X = 15;
 					Bird.Scale.Y = 15;
 					Bird.Scale.Z = 15;
@@ -84,6 +90,17 @@
 				else{
 					turnSpeed = 5.0;
 				}
+
+				// Flap those wings
+				// Switch from moving upwards to downwards and vice-versa, if necessary
+				var flapAngle = BirdLeftWing.Rotation.X + flapSpeed * flapDirection;
+				if (flapAngle > flapHeight || flapAngle < flapDepth) {
+					flapDirection *= -1;
+				}
+				// Rotate the wings
+				BirdLeftWing.Rotation.X = BirdLeftWing.Rotation.X + flapSpeed * flapDirection;
+				BirdRightWing.Rotation.X = BirdRightWing.Rotation.X + flapSpeed * -flapDirection;
+
 				//Clear the Canvas from the previous draw
 				Canvas2D.clearRect(0, 0, 600, 400);
 				
