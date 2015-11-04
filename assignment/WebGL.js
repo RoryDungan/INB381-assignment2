@@ -477,8 +477,11 @@ function LoadModel(ModelName, CB){
 									textureOffset += objects[i].Textures.length;
 								}
 								index = (parseInt(TC[1]) - 1) - textureOffset;
-								objects[currentObject].TextureMap.push(objects[currentObject].Textures[index].X);
-								objects[currentObject].TextureMap.push(objects[currentObject].Textures[index].Y);
+								// Only set up texture maps if there is a texture associated with our object. 
+								if (index || index === 0) {
+									objects[currentObject].TextureMap.push(objects[currentObject].Textures[index].X);
+									objects[currentObject].TextureMap.push(objects[currentObject].Textures[index].Y);
+								}
 								
 								//If This Entry Has Normals Data
 								if(TC.length>2)

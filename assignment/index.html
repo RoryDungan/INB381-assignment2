@@ -9,6 +9,7 @@
 			var Bird;
 			var BirdLeftWing;
 			var BirdRightWing;
+			var Ground;
 			var Canvas2D;
 			var speed = 0.2;
 			var turnSpeed = 5;
@@ -49,6 +50,17 @@
 					setInterval(Update, 33);
 					document.onkeydown = handleKeyDown;
 				});
+				LoadModel("GroundPlane", function(objects) {
+					Ground = new GLObject(
+						objects[0].VerticeMap, 
+						objects[0].Triangles, 
+						objects[0].TextureMap, 
+						"patchygrass_1.jpg", 
+						objects[0].NormalMap.length > 0 ? objects[0].NormalMap : false);
+					Ground.Pos.Y = -5;
+					Ground.Rotation.X = 0;
+				});
+
 				Canvas2D = document.getElementById("2DCanvas").getContext("2d");
 				Canvas2D.fillStyle="#000";
 
@@ -78,23 +90,24 @@
 
 			// Traverse the tree of children in the supplied object and draw them all
 			function DrawObjectAndChildren(object) {
+				// Recursively call GL.Draw on each object and its children.
 				GL.Draw(object);
 				object.Children.forEach(function (child) {
 					DrawObjectAndChildren(child);
 				});
 			};
 
-			function Update(){
+			function Update() {
 				Bird.Pos.X += speed * Math.cos(Bird.Rotation.Y * Math.PI / 180);
 				Bird.Pos.Z += speed * Math.sin(Bird.Rotation.Y * Math.PI / 180);
 
-				if(Bird.Pos.X > 10 || Bird.Pos.X < -10 || Bird.Pos.Z > 35 || Bird.Pos.Z < 10){
+				if (Bird.Pos.X > 10 || Bird.Pos.X < -10 || Bird.Pos.Z > 35 || Bird.Pos.Z < 10) {
 					Bird.Rotation.Y += 5;
 					turnSpeed = 0;
 					Bird.Pos.X += 0.1 * Math.cos(Bird.Rotation.Y * Math.PI / 180);
 					Bird.Pos.Z += 0.1 * Math.sin(Bird.Rotation.Y * Math.PI / 180);
 				}
-				else{
+				else {
 					turnSpeed = 5;
 				}
 
@@ -123,6 +136,9 @@
 				Canvas2D.fillText("Rotation : " + Math.floor(Bird.Rotation.Y) , 20, 115);
 				
 				GL.GL.clear(16384 | 256);
+
+				GL.Draw(Ground);
+
 				// Traverse the tree to draw the component objects.
 				DrawObjectAndChildren(Bird);
 			}
