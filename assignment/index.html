@@ -77,6 +77,15 @@
 					Bird.Pos.Z += speed * Math.sin(Bird.Rotation.Y * Math.PI / 180);
 				}
 			}
+
+			// Traverse the tree of children in the supplied object and draw them all
+			function DrawObjectAndChildren(object) {
+				GL.Draw(object);
+				object.Children.forEach(function (child) {
+					DrawObjectAndChildren(child);
+				});
+			};
+
 			function Update(){
 				Bird.Pos.X += speed * Math.cos(Bird.Rotation.Y * Math.PI / 180);
 				Bird.Pos.Z += speed * Math.sin(Bird.Rotation.Y * Math.PI / 180);
@@ -116,9 +125,8 @@
 				Canvas2D.fillText("Rotation : " + Math.floor(Bird.Rotation.Y) , 20, 115);
 				
 				GL.GL.clear(16384 | 256);
-				GL.Draw(Bird);
-				GL.Draw(BirdLeftWing);
-				GL.Draw(BirdRightWing);
+				// Traverse the tree to draw the component objects.
+				DrawObjectAndChildren(Bird);
 			}
 			
 		</script>
