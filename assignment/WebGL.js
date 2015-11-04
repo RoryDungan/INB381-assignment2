@@ -298,7 +298,7 @@ function GLObject(VertexArr, TriangleArr, TextureArr, ImageSrc, NormalsArr){
 			return this.GetLocalTransforms();
 		}
 
-		return MultiplyMatrix(this.GetLocalTransforms(), this.Parent.GetWorldMatrix());
+		return MultiplyMatrix(this.GetLocalTransforms(), this.Parent.GetWorldTransforms());
 	};
 
 	this.SetParent = function(parent) {
@@ -312,7 +312,7 @@ function GLObject(VertexArr, TriangleArr, TextureArr, ImageSrc, NormalsArr){
 
 		// Add us to the new parent
 		if (parent) {
-			parent.Children.append(this);
+			parent.Children.push(this);
 		}
 		this.Parent = parent;
 	}
