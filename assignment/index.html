@@ -24,6 +24,21 @@
 						objects[0].NormalMap.length > 0 ? objects[0].NormalMap : false);
 
 					Bird.Pos.Z = 250;
+					BirdLeftWing = new GLObject(
+						objects[1].VerticeMap, 
+						objects[1].Triangles, 
+						objects[1].TextureMap, 
+						"Bird.jpg", 
+						objects[1].NormalMap.length > 0 ? objects[1].NormalMap : false);
+					BirdLeftWing.SetParent(Bird);
+
+					BirdRightWing = new GLObject(
+						objects[2].VerticeMap, 
+						objects[2].Triangles, 
+						objects[2].TextureMap, 
+						"Bird.jpg", 
+						objects[2].NormalMap.length > 0 ? objects[1].NormalMap : false);
+					BirdRightWing.SetParent(Bird);
 					Bird.Scale.X = 15;
 					Bird.Scale.Y = 15;
 					Bird.Scale.Z = 15;
@@ -85,6 +100,8 @@
 				
 				GL.GL.clear(16384 | 256);
 				GL.Draw(Bird);
+				GL.Draw(BirdLeftWing);
+				GL.Draw(BirdRightWing);
 			}
 			
 		</script>
