@@ -11,18 +11,17 @@
 			var Canvas2D;
 			var speed = 2;
 			var turnSpeed = 5.0;
-			
+
 			function Ready(){
 				GL = new WebGL("GLCanvas", "FragmentShader", "VertexShader");
 				LoadModel("Bird", function(objects) {
-					if(objects[0].NormalMap.length > 0)
-					{
-						Bird = new GLObject(objects[0].VerticeMap, objects[0].Triangles, objects[0].TextureMap, "Bird.jpg", objects[0].NormalMap);
-					}
-					else
-					{
-						Bird = new GLObject(objects[0].VerticeMap, objects[0].Triangles, objects[0].TextureMap, "Bird.jpg", false);
-					}
+					Bird = new GLObject(
+						objects[0].VerticeMap, 
+						objects[0].Triangles, 
+						objects[0].TextureMap, 
+						"Bird.jpg", 
+						objects[0].NormalMap.length > 0 ? objects[0].NormalMap : false);
+
 					Bird.Pos.Z = 250;
 					Bird.Scale.X = 15;
 					Bird.Scale.Y = 15;
