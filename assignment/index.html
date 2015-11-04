@@ -10,8 +10,8 @@
 			var BirdLeftWing;
 			var BirdRightWing;
 			var Canvas2D;
-			var speed = 2;
-			var turnSpeed = 5.0;
+			var speed = 0.2;
+			var turnSpeed = 5;
 
 			var flapping = true;
 			var flapDirection = 1;
@@ -28,8 +28,8 @@
 						objects[0].TextureMap, 
 						"Bird.jpg", 
 						objects[0].NormalMap.length > 0 ? objects[0].NormalMap : false);
+					Bird.Pos.Z = 25;
 
-					Bird.Pos.Z = 250;
 					BirdRightWing = new GLObject(
 						objects[1].VerticeMap, 
 						objects[1].Triangles, 
@@ -45,9 +45,7 @@
 						"Bird.jpg", 
 						objects[2].NormalMap.length > 0 ? objects[1].NormalMap : false);
 					BirdLeftWing.SetParent(Bird);
-					Bird.Scale.X = 15;
-					Bird.Scale.Y = 15;
-					Bird.Scale.Z = 15;
+
 					setInterval(Update, 33);
 					document.onkeydown = handleKeyDown;
 				});
@@ -90,14 +88,14 @@
 				Bird.Pos.X += speed * Math.cos(Bird.Rotation.Y * Math.PI / 180);
 				Bird.Pos.Z += speed * Math.sin(Bird.Rotation.Y * Math.PI / 180);
 
-				if(Bird.Pos.X > 150 || Bird.Pos.X < -150 || Bird.Pos.Z > 500 || Bird.Pos.Z < 200){
+				if(Bird.Pos.X > 10 || Bird.Pos.X < -10 || Bird.Pos.Z > 35 || Bird.Pos.Z < 10){
 					Bird.Rotation.Y += 5;
 					turnSpeed = 0;
-					Bird.Pos.X += 1.5 * Math.cos(Bird.Rotation.Y * Math.PI / 180);
-					Bird.Pos.Z += 1.5 * Math.sin(Bird.Rotation.Y * Math.PI / 180);
+					Bird.Pos.X += 0.1 * Math.cos(Bird.Rotation.Y * Math.PI / 180);
+					Bird.Pos.Z += 0.1 * Math.sin(Bird.Rotation.Y * Math.PI / 180);
 				}
 				else{
-					turnSpeed = 5.0;
+					turnSpeed = 5;
 				}
 
 				// Flap those wings
