@@ -125,7 +125,7 @@ function WebGL(CID, FSID, VSID){
 				//Generate The Perspective Matrix
 				var PerspectiveMatrix = MakePerspective(45, this.AspectRatio, 1, 1000.0);  
 				
-				var TransformMatrix = Model.GetTransforms();
+				var TransformMatrix = Model.GetWorldTransforms();
 				
 				var NormalsMatrix =  MatrixTranspose(InverseMatrix(TransformMatrix));
 	
@@ -240,7 +240,10 @@ function GLObject(VertexArr, TriangleArr, TextureArr, ImageSrc, NormalsArr){
 	this.Image.onload  = function(){ this.ReadyState = true; };
 	this.Image.src     = ImageSrc; 
 	this.Ready		   = false;
-	this.GetTransforms = function(){
+	this.Children	   = [];
+	this.Parent 	   = null;
+	// Get the local transform of this object relative to its parent
+	this.GetLocalTransforms = function(){
 		//Create a Blank Identity Matrix
 		var TMatrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 		
@@ -287,6 +290,31 @@ function GLObject(VertexArr, TriangleArr, TextureArr, ImageSrc, NormalsArr){
 		Temp[14] = this.Pos.Z * -1;
 		
 		return MultiplyMatrix(TMatrix, Temp);
+	};
+	// Get the transform matrix for the absolute position of this object in world space.
+	this.GetWorldTransforms = function() {
+		// If we are a root object then local space is world space
+		if (!this.Parent) {
+			return this.GetLocalTransforms();
+		}
+
+		return MultiplyMatrix(this.GetLocalTransforms(), this.Parent.GetWorldMatrix());
+	};
+
+	this.SetParent = function(parent) {
+		// Remove us from our parent
+		if (this.Parent) {
+			var index = this.Parent.Children.indexOf(this);
+			if (index >= 0) {
+				this.Parent.Children.splice(index, 1);
+			}
+		}
+
+		// Add us to the new parent
+		if (parent) {
+			parent.Children.append(this);
+		}
+		this.Parent = parent;
 	}
 }
 
